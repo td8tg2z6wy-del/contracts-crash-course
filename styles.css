@@ -99,6 +99,11 @@ a.chip:hover { background: #fff6d6; }
 table.topics { width: 100%; border-collapse: collapse; margin: 10px 0 16px; }
 table.topics td { padding: 6px 4px; border-bottom: 2px dashed #d5dae0; }
 table.topics td:last-child { text-align: right; font-family: var(--hand); white-space: nowrap; }
+table.topics.three td:last-child { text-align: right; font-family: var(--body); }
+table.topics.three td:nth-child(2) { font-family: var(--hand); white-space: nowrap; padding: 6px 12px; }
+.meter { height: 7px; background: #e3e7ec; border-radius: 4px; margin-top: 4px; max-width: 320px; overflow: hidden; }
+.meter i { display: block; height: 100%; border-radius: 4px; }
+.meter i.g { background: var(--green); } .meter i.y { background: #d9a100; } .meter i.r { background: var(--red); }
 details.missed { border-top: 2px dashed #d5dae0; padding: 8px 0; }
 details.missed summary { cursor: pointer; font-weight: 600; }
 details.missed p { margin: 6px 0 0; }

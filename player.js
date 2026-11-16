@@ -253,8 +253,8 @@
       if (!mini.firstChild) {
         mini.innerHTML = '<h2>Mini set: ' + L.mini.length + ' questions on this board</h2><div id="miniq"></div>';
         P.runQuiz(mini.querySelector('#miniq'), {
-          title: 'Mini set', questions: L.mini,
-          audio: function (q, m) { return 'audio/quiz/' + id + '-m' + (m + 1) + '.m4a'; },
+          title: 'Mini set', kind: 'Mini set: ' + L.title, questions: L.mini,
+          id: function (q, m) { return id + '-m' + (m + 1); },
           exit: ['#/lessons', 'Back to lessons']
         });
       }
