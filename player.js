@@ -176,7 +176,7 @@
     if (L) return start(el, id, L);
     el.innerHTML = '<section class="board"><p>Wheeling in the whiteboard…</p></section>';
     var sc = document.createElement('script');
-    sc.src = 'lessons/' + encodeURIComponent(id) + '.js?v=4';
+    sc.src = 'lessons/' + encodeURIComponent(id) + '.js?v=5';
     sc.onload = function () { var X = (window.LESSONS || {})[id]; if (X) start(el, id, X); else sc.onerror(); };
     sc.onerror = function () { el.innerHTML = '<section class="board"><h2>This board is still being drawn.</h2><p><a class="btn" href="#/lessons">Back to lessons</a></p></section>'; };
     document.head.appendChild(sc);
@@ -237,7 +237,7 @@
         var left = animDur * 1000 - (Date.now() - began);
         timer = setTimeout(function () { if (playing) play(n + 1); }, Math.max(450, left) / speed);
       }
-      var a = new Audio('audio/' + id + '/' + (n + 1) + '.m4a'); audio = a; a.playbackRate = speed;
+      var a = new Audio('audio/' + id + '/' + (n + 1) + '.m4a?v=5'); audio = a; a.playbackRate = speed;
       a.onended = done;
       a.onerror = function () { timer = setTimeout(done, est * 1000 / speed); };
       var p = a.play(); if (p && p.catch) p.catch(function () { timer = setTimeout(done, est * 1000 / speed); });
