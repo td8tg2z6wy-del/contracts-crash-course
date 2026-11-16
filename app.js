@@ -99,7 +99,7 @@
             (ok ? 'Correct.' : 'Not quite. The answer is ' + L[q.a] + '.') + '</strong><p>' + esc(q.w) + '</p></div>';
           box.hidden = false;
           el.querySelector('[data-next]').hidden = false;
-          if (soundOn() && id) speak('audio/quiz/' + id + '.m4a?v=5', box);
+          if (soundOn() && id) speak('audio/quiz/' + id + '.m4a?v=6', box);
           el.querySelector('[data-next]').focus();
         });
       });

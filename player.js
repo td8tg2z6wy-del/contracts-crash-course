@@ -45,6 +45,11 @@
 
   function col(c) { return c && c !== 'ink' ? ' c-' + c : ''; }
   function sty(t, d) { return ' style="--t:' + t.toFixed(2) + 's' + (d ? ';--d:' + d.toFixed(2) + 's' : '') + '"'; }
+  /* Text appears letter by letter. Each letter fades in on its own, so nothing can be clipped. */
+  function letters(str, t, d) {
+    var chars = Array.from(String(str)), step = d / Math.max(1, chars.length);
+    return chars.map(function (ch, i) { return '<tspan class="wr" style="--t:' + (t + i * step).toFixed(3) + 's">' + esc(ch) + '</tspan>'; }).join('');
+  }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function wrap(text, width, size) {
     var max = Math.max(6, Math.floor(width / (size * W))), out = [], line = '';
@@ -58,8 +63,8 @@
     var s = '', lh = size * 1.22, t0 = t;
     lines.forEach(function (ln, i) {
       var d = clamp(ln.length * 0.03, .25, 1.2);
-      s += '<text class="write' + col(c) + '" x="' + x + '" y="' + (y + i * lh) + '" font-size="' + size + '"' +
-        (anchor ? ' text-anchor="' + anchor + '"' : '') + sty(t, d) + '>' + esc(ln) + '</text>';
+      s += '<text class="' + col(c).trim() + '" x="' + x + '" y="' + (y + i * lh) + '" font-size="' + size + '"' +
+        (anchor ? ' text-anchor="' + anchor + '"' : '') + '>' + letters(ln, t, d) + '</text>';
       t += d;
     });
     return { svg: s, dur: t - t0, h: lines.length * lh };
@@ -111,7 +116,7 @@
         if (!ps) inner = '<rect class="ink draw" pathLength="1" x="-26" y="-20" width="52" height="40" stroke-dasharray="4 5"' + sty(t, .5) + '/>';
         else ps.forEach(function (p, i) { inner += path(p, c, t + i * .18, .5, 3.5); });
         s = '<g transform="translate(' + e.x + ' ' + e.y + ') scale(' + sc + ')">' + inner + '</g>';
-        if (e.label) s += '<text class="write c-blue" x="' + e.x + '" y="' + (e.y + 34 * sc + 18) + '" font-size="18" text-anchor="middle"' + sty(t + .5, .3) + '>' + esc(e.label) + '</text>';
+        if (e.label) s += '<text class="c-blue" x="' + e.x + '" y="' + (e.y + 34 * sc + 18) + '" font-size="18" text-anchor="middle">' + letters(e.label, t + .5, .3) + '</text>';
         return { svg: s, dur: .5 + (ps ? ps.length : 1) * .18 };
       }
       case 'fig': {
@@ -122,7 +127,7 @@
           '<path class="' + cls + '" stroke-width="3.2" d="M-5.5 -100 v.1 M5.5 -100 v.1"/>' +
           '<path class="' + cls + '" stroke-width="2.5" d="' + (FACE[e.face] || FACE.smile) + '"/>' +
           (HAT[e.hat] ? '<path class="' + cls + '" stroke-width="3" d="' + HAT[e.hat] + '"/>' : '') + '</g></g>';
-        if (e.label) s += '<text class="write c-blue" x="' + e.x + '" y="' + (e.y + 22) + '" font-size="18" text-anchor="middle"' + sty(t + .2, .3) + '>' + esc(e.label) + '</text>';
+        if (e.label) s += '<text class="c-blue" x="' + e.x + '" y="' + (e.y + 22) + '" font-size="18" text-anchor="middle">' + letters(e.label, t + .2, .3) + '</text>';
         d = .45;
         if (e.say) {
           var bl = wrap(e.say, 190, 19), longest = bl.reduce(function (m, l) { return Math.max(m, l.length); }, 0);
@@ -142,9 +147,9 @@
         /* rule card: section number in a red box, name, one-sentence rule, memory hook */
         var x = e.x, y = e.y, cw = e.w || 660, nb = e.num.length * 17 + 26, t1 = t;
         s = '<rect class="ink draw c-red" pathLength="1" x="' + x + '" y="' + y + '" width="' + nb + '" height="42" rx="6"' + sty(t1, .5) + '/>' +
-          '<text class="write c-red" x="' + (x + 13) + '" y="' + (y + 31) + '" font-size="28"' + sty(t1 + .2, .4) + '>' + esc(e.num) + '</text>';
+          '<text class="c-red" x="' + (x + 13) + '" y="' + (y + 31) + '" font-size="28">' + letters(e.num, t1 + .2, .4) + '</text>';
         t1 += .6;
-        if (e.name) { s += '<text class="write" x="' + (x + nb + 14) + '" y="' + (y + 31) + '" font-size="27"' + sty(t1, .5) + '>' + esc(e.name) + '</text>'; t1 += .5; }
+        if (e.name) { s += '<text x="' + (x + nb + 14) + '" y="' + (y + 31) + '" font-size="27">' + letters(e.name, t1, .5) + '</text>'; t1 += .5; }
         var yy = y + 72;
         r = textLines(wrap(e.rule, cw, 22), x, yy, 22, null, t1); s += r.svg; t1 += r.dur; yy += r.h;
         if (e.hook) {
@@ -176,7 +181,7 @@
     if (L) return start(el, id, L);
     el.innerHTML = '<section class="board"><p>Wheeling in the whiteboard…</p></section>';
     var sc = document.createElement('script');
-    sc.src = 'lessons/' + encodeURIComponent(id) + '.js?v=5';
+    sc.src = 'lessons/' + encodeURIComponent(id) + '.js?v=6';
     sc.onload = function () { var X = (window.LESSONS || {})[id]; if (X) start(el, id, X); else sc.onerror(); };
     sc.onerror = function () { el.innerHTML = '<section class="board"><h2>This board is still being drawn.</h2><p><a class="btn" href="#/lessons">Back to lessons</a></p></section>'; };
     document.head.appendChild(sc);
@@ -211,7 +216,7 @@
       var cur = beats[k], sc = L.scenes[cur.si], from = firstOf[cur.si], s = '', i;
       for (i = k; i > from; i--) if (beats[i].b.clear) { from = i; break; }
       var freshTitle = animate && k === firstOf[cur.si];
-      s += '<g class="' + (freshTitle ? 'on' : 'now') + '"><text class="write" x="58" y="82" font-size="40" style="--d:.6s">' + esc(sc.title) + '</text>' +
+      s += '<g class="' + (freshTitle ? 'on' : 'now') + '"><text x="58" y="82" font-size="40">' + letters(sc.title, 0, .6) + '</text>' +
         path('M56 96 q' + Math.min(330, sc.title.length * 10) + ' 9 ' + Math.min(660, sc.title.length * 20) + ' -2', 'red', .5, .4) + '</g>';
       for (i = from; i < k; i++) s += '<g class="now">' + beatSvg(beats[i].b).svg + '</g>';
       var r = beatSvg(cur.b);
@@ -237,7 +242,7 @@
         var left = animDur * 1000 - (Date.now() - began);
         timer = setTimeout(function () { if (playing) play(n + 1); }, Math.max(450, left) / speed);
       }
-      var a = new Audio('audio/' + id + '/' + (n + 1) + '.m4a?v=5'); audio = a; a.playbackRate = speed;
+      var a = new Audio('audio/' + id + '/' + (n + 1) + '.m4a?v=6'); audio = a; a.playbackRate = speed;
       a.onended = done;
       a.onerror = function () { timer = setTimeout(done, est * 1000 / speed); };
       var p = a.play(); if (p && p.catch) p.catch(function () { timer = setTimeout(done, est * 1000 / speed); });
