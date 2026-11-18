@@ -5,7 +5,6 @@
   var READY = window.READY || [];
   var BANK = window.BANK || (window.DRILL || []).map(function (q, i) { q.id = 'b' + (i + 1); return q; });
 
-  var SECTIONS = window.SECTIONS || [];
   var ISSUES = (window.ISSUES || []).map(function (q, i) { q.id = 'i' + (i + 1); return q; });
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -99,7 +98,7 @@
             (ok ? 'Correct.' : 'Not quite. The answer is ' + L[q.a] + '.') + '</strong><p>' + esc(q.w) + '</p></div>';
           box.hidden = false;
           el.querySelector('[data-next]').hidden = false;
-          if (soundOn() && id) speak('audio/quiz/' + id + '.m4a?v=6', box);
+          if (soundOn() && id) speak('audio/quiz/' + id + '.m4a?v=7', box);
           el.querySelector('[data-next]').focus();
         });
       });
@@ -224,34 +223,6 @@
 
   function shuffled(a) { a = a.slice(); for (var j = a.length - 1; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), t = a[j]; a[j] = a[r]; a[r] = t; } return a; }
 
-  /* Section drills are built from the rule cards in the lessons: number to rule, and rule to number. */
-  function sectionQuestions(track, count) {
-    var cards = SECTIONS.filter(function (c) { return c.track === track; }), s = stats.load();
-    var order = cards.map(function (c) { var h = s.q[c.id]; return { c: c, r: Math.random() / (!h ? 1.5 : !h.ok ? 3 : 0.4) }; })
-      .sort(function (a, b) { return a.r - b.r; }).slice(0, count).map(function (x) { return x.c; });
-    return order.map(function (c) {
-      var opts = shuffled([c].concat(shuffled(cards.filter(function (x) { return x !== c; })).slice(0, 3)));
-      var full = function (x) { return (x.name ? x.name + ': ' : '') + x.rule; }, toRule = Math.random() < 0.5;
-      return { id: c.id, t: track === 'ucc' ? 'UCC sections' : 'Restatement sections', k: track,
-        q: toRule ? 'What does ' + c.num + ' cover?' : 'Which section is this? \u201c' + full(c) + '\u201d',
-        o: opts.map(function (x) { return toRule ? full(x) : x.num; }), a: opts.indexOf(c), w: c.w };
-    });
-  }
-  function sections(track) {
-    track = track === 'ucc' ? 'ucc' : 'cl';
-    var name = track === 'ucc' ? 'UCC sections drill' : 'Restatement sections drill';
-    var n = SECTIONS.filter(function (c) { return c.track === track; }).length;
-    app.innerHTML = '<section class="board" id="setup"><h1>' + name + '</h1>' +
-      says('Section numbers, both ways: I give you a number and you pick the rule, or I give you the rule and you pick the number. ' + n + ' sections, straight from the rule cards in the videos. Ones you miss come back first.') +
-      '<h3>How many?</h3><div class="row" id="len"><button class="btn" data-n="10" type="button">10</button><button class="btn" data-n="20" type="button">20</button><button class="btn" data-n="' + n + '" type="button">All ' + n + '</button></div></section><div id="quiz"></div>';
-    app.querySelectorAll('#len button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        app.querySelector('#setup').remove();
-        runQuiz(document.getElementById('quiz'), { title: track === 'ucc' ? 'UCC drill' : 'Restatement drill', kind: name,
-          questions: sectionQuestions(track, +b.dataset.n), exit: ['#/drill', 'All drills'] });
-      });
-    });
-  }
   function issues() {
     app.innerHTML = '<section class="board" id="setup"><h1>Issue spotting</h1>' +
       says(ISSUES.length + ' fact patterns, in the order a deal lives and dies. Do not solve them. Just spot the issue a grader is waiting for, and ignore the facts I planted to distract you.') +
@@ -269,8 +240,6 @@
       weak.length ? 'I have been watching. Your weakest topics right now: <span class="red">' + weak.map(esc).join(', ') + '</span>. The smart drill leans on those and on questions you missed.' :
       'The smart drill leans on your weaker topics and on questions you missed, and re-aims after every answer.';
     var sets = topic ? '' : '<div id="sets"><h2>Drill sets</h2><div class="cards" style="margin-bottom:26px">' +
-      '<a class="card" href="#/sections/cl"><h3 class="blue">Restatement sections</h3><p>Match section numbers to their rules, and rules to their numbers.</p></a>' +
-      '<a class="card" href="#/sections/ucc"><h3 class="green">UCC sections</h3><p>The same, for Article 2: 2-207, 2-601 and friends.</p></a>' +
       '<a class="card" href="#/issues"><h3 class="red">Issue spotting</h3><p>' + ISSUES.length + ' exam-style fact patterns. Spot the issue, ignore the red herrings.</p></a></div></div>';
     app.innerHTML = sets + '<section class="board" id="setup"><h1>' + (topic ? 'Topic drill' : 'Smart drill') + '</h1>' + says(intro) +
       (topic ? '' : '<h3>How should I choose?</h3><div class="row" id="mode"><button class="btn small go" data-m="smart" type="button">Aim at my weak spots</button><button class="btn small" data-m="random" type="button">Random mix</button></div>' +
@@ -386,7 +355,6 @@
     if (h[0] === 'diagnostics') diagnostics();
     else if (h[0] === 'diagnostic') diagnostic(h[1]);
     else if (h[0] === 'drill') drill(h[1] ? decodeURIComponent(h[1]) : null);
-    else if (h[0] === 'sections') sections(h[1]);
     else if (h[0] === 'issues') issues();
     else if (h[0] === 'progress') progress();
     else if (h[0] === 'lessons') lessons();
